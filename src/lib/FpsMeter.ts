@@ -1,26 +1,38 @@
+import { hslColPerc } from './helpers';
+
 interface FpsMeterConfig {
   width: number,
   height: number,
+  graphPadding: number,
   columnWidth: number,
-  gapSize: number,
+  columnGapSize: number,
   bgColor: string,
   columnColor: string;
   textColor: string;
-  min: number,
-  max: number,
+  minFps: number,
+  maxFps: number,
+  period: number;
+  textFontSize: number;
+  fontSize: number;
+  font: string;
 }
 
 const defaultConfig: FpsMeterConfig = {
   width: 110,
   height: 40,
+  graphPadding: 5,
   columnWidth: 4,
-  gapSize: 1,
-  bgColor: '#fffffff',
-  columnColor: '#fffffff',
-  textColor: '#fffffff',
-  min: 0,
-  max: 60,
-}
+  columnGapSize: 1,
+  bgColor: 'rgb(34, 34, 34)',
+  columnColor: '#FF0000',
+  textColor: '#ffffff',
+  minFps: 0,
+  maxFps: 60,
+  period: 500,
+  font: 'Consolas, "Andale Mono", monospace',
+  textFontSize: 12,
+  fontSize: 24
+};
 
 const positions = {
   'top-left': 'left: 0; top: 0;',
@@ -30,127 +42,129 @@ const positions = {
 };
 
 export class FpsMeter {
-  private min;
-  private max;
-  private pixelRatio = Math.round(window.devicePixelRatio || 1);
-  private WIDTH;
-  private HEIGHT;
-  private TEXT_X;
-  private TEXT_Y;
-  private GRAPH_X;
-  private GRAPH_Y;
-  private GRAPH_WIDTH;
-  private GRAPH_HEIGHT;
+  private settings: FpsMeterConfig;
+  private averageFps: number;
+  private currentFps: number;
+  private columnValues: Array<number>;
+  private columnsLeftGap: number;
   private canvas;
   private context;
-  private bg = '#FF0000';
-  private fg = '#000000';
-  private maxValue = 60;
-  private settings: FpsMeterConfig;
 
-
-  constructor(config: FpsMeterConfig) {
-
+  constructor(config: Partial<FpsMeterConfig>) {
+    this.setConfig(config);
     this.createIndicator();
   }
 
-  setConfig(config: FpsMeterConfig) {
+  setConfig(config: Partial<FpsMeterConfig>) {
     const currentConfig = { ...defaultConfig, ...config };
     const ratio = Math.round(window.devicePixelRatio || 1);
-    this.settings = { ...defaultConfig, ...config };
+    let { width, height, columnWidth, columnGapSize, fontSize } = currentConfig;
+    width = width * ratio;
+    height = height * ratio;
+    columnWidth = columnWidth * ratio;
+    columnGapSize = columnGapSize * ratio;
+    fontSize = fontSize * ratio;
+    this.settings = { ...currentConfig, width, height, columnWidth, columnGapSize, fontSize };
   }
 
   private createIndicator() {
-    const {  } = this.settings;
-    this.min = Infinity;
-    this.max = 0;
-    this.pixelRatio = Math.round(window.devicePixelRatio || 1);
-    this.WIDTH = 80 * this.pixelRatio;
-    this.HEIGHT = 48 * this.pixelRatio;
-    this.TEXT_X = 3 * this.pixelRatio;
-    this.TEXT_Y = 2 * this.pixelRatio;
-    this.GRAPH_X = 3 * this.pixelRatio;
-    this.GRAPH_Y = 15 * this.pixelRatio;
-    this.GRAPH_WIDTH = 74 * this.pixelRatio;
-    this.GRAPH_HEIGHT = 30 * this.pixelRatio;
-
     this.canvas = document.createElement('canvas');
     document.body.appendChild(this.canvas);
-    this.canvas.width = this.WIDTH;
-    this.canvas.height = this.HEIGHT;
-    this.canvas.style.cssText = 'width:80px;height:48px';
-
+    const { width, height, fontSize, font, bgColor } = this.settings;
+    this.calcColumnNumber();
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.canvas.style.cssText = `width:${width}px;height:${height}px`;
     this.context = this.canvas.getContext('2d');
-    this.context.font = 'bold ' + (9 * this.pixelRatio) + 'px Helvetica,Arial,sans-serif';
     this.context.textBaseline = 'top';
-
-    this.context.fillStyle = this.fg;
-    this.context.fillRect(0, 0, this.WIDTH, this.HEIGHT);
-
-    this.context.fillStyle = this.bg;
-    this.context.fillText(name, this.TEXT_X, this.TEXT_Y);
-    this.context.fillRect(this.GRAPH_X, this.GRAPH_Y, this.GRAPH_WIDTH, this.GRAPH_HEIGHT);
-
-    this.context.fillStyle = this.bg;
-    this.context.globalAlpha = 0.9;
-    this.context.fillRect(this.GRAPH_X, this.GRAPH_Y, this.GRAPH_WIDTH, this.GRAPH_HEIGHT);
-
+    this.context.fillStyle = bgColor;
+    this.context.fillRect(0, 0, width, height);
     this.ticks();
   }
 
-  ticks() {
-    let opts: any = this.config || {};
-    let ctx = this.canvas;
-    let w = this.canvas.width;
-    let h = this.canvas.height;
-    let count = 0;
-    let lastTime = 0;
-    let values = opts.values || Array(this.canvas.width);
-    let period = opts.period || 1000;
-    let max = opts.max || 100;
-    let name = 'fps';
+  private calcColumnNumber() {
+    const { width, columnGapSize, columnWidth, graphPadding } = this.settings;
+    const withWithoutPadding = width - graphPadding * 2;
+    const val = withWithoutPadding / (columnWidth + columnGapSize);
+    const remainder = withWithoutPadding % (columnWidth + columnGapSize);
+    this.columnsLeftGap = remainder / 2;
+    const numberOfColumns = Math.floor(val);
+    this.columnValues = Array.from({ length: numberOfColumns }, () => 0);
+  }
 
-    console.log('eba');
+  // private getTime() {
+  //   var perf = w.performance;
+  //   if (perf && (perf.now || perf.webkitNow)) {
+  //     var perfNow = perf.now ? 'now' : 'webkitNow';
+  //     getTime = perf[perfNow].bind(perf);
+  //   } else {
+  //     return +new Date();
+  //   }
+  // }
+
+
+  ticks() {
+    let { period, bgColor, width, height, maxFps } = this.settings;
+    let lastTime = 0;
+    let count = 0;
     const mesure = () => {
       count++;
-      let t = +new Date();
-      console.log(t - lastTime > period);
-      if (t - lastTime > period) {
-        lastTime = t;
-        values.push(count / (this.max * period * 0.001));
-        values = values.slice(-w);
+      let currentTime = +new Date();
+      if (currentTime - lastTime > period) {
+        lastTime = currentTime;
+        this.columnValues.forEach((one, i) => {
+          if (i !== 0) {
+            this.columnValues[i - 1] = one;
+          }
+        });
+
+        let fps = (count - 1) / (period * 0.001);
+        const fpsForShow = fps > maxFps ? maxFps : fps;
+        let percentageFps = fps / (maxFps / 100);
+        percentageFps = percentageFps > 100 ? 100 : percentageFps;
         count = 0;
-        //
-        // ctx.clearRect(0, 0, w, h);
-        // ctx.fillStyle = getComputedStyle(that.this.canvas).color;
-        // for (let i = w; i--;) {
-        //   let value = values[i];
-        //   if (value == null) break;
-        //   ctx.fillRect(i, h - h * value, 1, h * value);
-        // }
-        //
-        // that.valueEl.innerHTML = (values[values.length - 1] * max).toFixed(1);
-        const value = count / (this.max * period * 0.001);
-        const min = Math.min(this.min, value);
-        const max = Math.max(this.max, value);
-
-        this.context.fillStyle = this.bg;
-        this.context.globalAlpha = 1;
-        this.context.fillRect(0, 0, this.WIDTH, this.GRAPH_Y);
-        this.context.fillStyle = this.fg;
-        this.context.fillText(Math.round(value) + ' ' + name + ' (' + Math.round(min) + '-' + Math.round(max) + ')', this.TEXT_X, this.TEXT_Y);
-        this.context.drawImage(this.canvas, this.GRAPH_X + this.pixelRatio, this.GRAPH_Y, this.GRAPH_WIDTH - this.pixelRatio, this.GRAPH_HEIGHT, this.GRAPH_X, this.GRAPH_Y, this.GRAPH_WIDTH - this.pixelRatio, this.GRAPH_HEIGHT);
-
-        this.context.fillRect(this.GRAPH_X + this.GRAPH_WIDTH - this.pixelRatio, this.GRAPH_Y, this.pixelRatio, this.GRAPH_HEIGHT);
-
-        this.context.fillStyle = this.bg;
-        this.context.globalAlpha = 0.9;
-        this.context.fillRect(this.GRAPH_X + this.GRAPH_WIDTH - this.pixelRatio, this.GRAPH_Y, this.pixelRatio, Math.round((1 - (value / this.maxValue)) * this.GRAPH_HEIGHT));
-        requestAnimationFrame(mesure);
-      } else {
-        requestAnimationFrame(mesure);
+        this.columnValues[this.columnValues.length - 1] = percentageFps;
+        this.context.clearRect(0, 0, width, height);
+        this.context.fillStyle = bgColor;
+        this.context.fillRect(0, 0, width, height);
+        this.renderColumns();
+        this.renderText(fpsForShow);
       }
+      requestAnimationFrame(mesure);
     };
     requestAnimationFrame(mesure);
   };
+
+  private renderText(fps) {
+    const { font, height, fontSize, textFontSize, width, graphPadding } = this.settings;
+    this.context.fillStyle = this.settings.textColor;
+    const textY = height / 2 - textFontSize / 2;
+    const fpsY = height / 2 - fontSize / 2;
+    this.context.textAlign = 'left';
+    this.context.font = `normal ${textFontSize}px ${font}`;
+    this.context.fillText('FPS', graphPadding, textY);
+    this.context.textAlign = 'right';
+    this.context.font = `normal ${fontSize}px ${font}`;
+    this.context.shadowColor = '#000000';
+    this.context.shadowBlur = 1;
+    this.context.strokeText(fps,width - graphPadding, fpsY);
+    this.context.fillText(fps, width - graphPadding, fpsY);
+  }
+
+  private renderColumns() {
+    const { columnWidth, columnColor, columnGapSize, height, graphPadding } = this.settings;
+    this.columnValues.forEach((one, i) => {
+      if (!one) {
+        return;
+      }
+
+      this.context.fillStyle = columnColor;
+      const x = this.columnsLeftGap + columnGapSize + graphPadding + (columnWidth + columnGapSize) * i;
+      const value = (height - graphPadding * 2) / 100 * one;
+      const y = height - value - graphPadding;
+      const color = hslColPerc(one);
+      this.context.fillStyle = color;
+      this.context.fillRect(x, y, this.settings.columnWidth, value);
+    });
+  }
 }
