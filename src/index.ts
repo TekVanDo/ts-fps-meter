@@ -1,1 +1,1 @@
-export { LibDemo } from './logic/LibDemo';
+export { FpsMeter } from './lib/FpsMeter';

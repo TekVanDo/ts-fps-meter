@@ -1,9 +1,8 @@
-import { LibDemo } from '../../src';
+import { FpsMeter } from '../../src/lib/FpsMeter';
 
 export class Experiments {
   public addHelloToBody() {
-    const ld = new LibDemo();
-    ld.addHello(document.body);
+    const ld = new FpsMeter({ color: 'red' });
   }
 }
 
