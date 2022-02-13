@@ -3,5 +3,6 @@ dist/*
 build-dev/*
 dts/*
 docs/*
+.idea
 
 yarn-error.log
