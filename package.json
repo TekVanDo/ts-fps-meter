@@ -11,7 +11,7 @@
   "scripts": {
     "lint": "eslint src",
     "start": "rollup --config rollup.config.dev.js -w",
-    "build": "yarn lint && rollup --config rollup.config.prod.js",
+    "build": "rollup --config rollup.config.prod.js",
     "docs": "typedoc"
   },
   "repository": {

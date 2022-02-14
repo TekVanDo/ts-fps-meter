@@ -25,11 +25,11 @@ export default [{
   },
   plugins: [
     del({ targets: ['dts/*', 'dist/*']}),
-    typescript({ 
-      declaration: true, 
-      outDir: './dts/', 
-      rootDir: './src/', 
-      exclude: ['./test/**/*', './dts/**/*', './dist/**/*'] 
+    typescript({
+      declaration: true,
+      outDir: './dts/',
+      rootDir: './src/',
+      exclude: ['./test/**/*', './dts/**/*', './dist/**/*']
     }),
   ]
 }, {
@@ -37,7 +37,7 @@ export default [{
   output: [{ file: `./dist/${pkg.name}.d.ts`, format: "es" }],
   plugins: [dts()],
 }, {
-  input: ['src/index.ts'],
+  input: ['./src/index.ts'],
   output: [
     {
       file: outputDir + pkg.module,

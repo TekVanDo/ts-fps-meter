@@ -12,7 +12,7 @@ export class Experiments {
     //   graphPadding: 30
     // });
 
-    const fp = new FpsMeter({ period: 500 });
+    const fp = new FpsMeter({ period: 500, colerfull: 'fps' });
   }
 }
 

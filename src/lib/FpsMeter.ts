@@ -1,23 +1,6 @@
 import { hslColPerc } from './helpers';
-
-interface FpsMeterConfig {
-  width: number,
-  height: number,
-  graphPadding: number,
-  columnWidth: number,
-  columnGapSize: number,
-  bgColor: string,
-  columnColor: string;
-  textColor: string;
-  minFps: number,
-  maxFps: number,
-  period: number;
-  textFontSize: number;
-  fontSize: number;
-  font: string;
-  position: string;
-  colerfull: boolean;
-}
+import { FpsMeterConfig, FpsMeterOptions } from '../interfaces/fps-meter';
+import { baseTheme, themes } from './themes';
 
 const positions = {
   'topLeft': 'left: 0; top: 0;',
@@ -27,68 +10,66 @@ const positions = {
 };
 
 const defaultConfig: FpsMeterConfig = {
-  width: 250,
-  height: 100,
-  graphPadding: 5,
+  width: 110,
+  height: 40,
   columnWidth: 4,
   columnGapSize: 1,
-  bgColor: 'rgb(34, 34, 34)',
-  columnColor: '#3f3f3f',
-  textColor: '#ffffff',
   minFps: 0,
-  maxFps: 240,
+  maxFps: 60,
   period: 500,
-  font: 'Consolas, "Andale Mono", monospace',
-  textFontSize: 12,
-  fontSize: 24,
   position: positions.topRight,
-  colerfull: false
+  theme: baseTheme
 };
 
 export class FpsMeter {
   private settings: FpsMeterConfig;
   private averageFps: number;
-  private currentFps: number;
   private columnValues: Array<number>;
   private columnsLeftGap: number;
   private canvas;
   private context;
 
-  constructor(config: Partial<FpsMeterConfig>) {
+  constructor(config: Partial<FpsMeterOptions>) {
     this.setConfig(config);
     this.createIndicator();
   }
 
-  setConfig(config: Partial<FpsMeterConfig>) {
+  setConfig(config: Partial<FpsMeterOptions>) {
+    let theme = baseTheme;
+    if (typeof currentConfig.theme === 'string') {
+
+    }
     const currentConfig = { ...defaultConfig, ...config };
     const ratio = Math.round(window.devicePixelRatio || 1);
-    let { width, height, columnWidth, columnGapSize, fontSize } = currentConfig;
+    let { width, height, columnWidth, columnGapSize, } = currentConfig;
+
+    let { fontSize } = currentConfig.theme;
     width = width * ratio;
     height = height * ratio;
     columnWidth = columnWidth * ratio;
     columnGapSize = columnGapSize * ratio;
     fontSize = fontSize * ratio;
-    this.settings = { ...currentConfig, width, height, columnWidth, columnGapSize, fontSize };
+    this.settings = { ...currentConfig, width, height, columnWidth, columnGapSize };
+    this.settings.theme.fontSize = fontSize;
   }
 
   private createIndicator() {
     this.canvas = document.createElement('canvas');
     document.body.appendChild(this.canvas);
-    const { width, height, position, bgColor } = this.settings;
+    const { width, height, position } = this.settings;
     this.calcColumnNumber();
     this.canvas.width = width;
     this.canvas.height = height;
     this.canvas.style.cssText = `width:${width}px;height:${height}px;position:absolute;${position}`;
     this.context = this.canvas.getContext('2d');
     this.context.textBaseline = 'top';
-    this.context.fillStyle = bgColor;
-    this.context.fillRect(0, 0, width, height);
+
     this.ticks();
   }
 
   private calcColumnNumber() {
-    const { width, columnGapSize, columnWidth, graphPadding } = this.settings;
-    const withWithoutPadding = width - graphPadding * 2;
+    const { width, columnGapSize, columnWidth } = this.settings;
+    const withWithoutPadding = width - this.settings.theme.graphPadding * 2;
     const val = withWithoutPadding / (columnWidth + columnGapSize);
     const remainder = withWithoutPadding % (columnWidth + columnGapSize);
     this.columnsLeftGap = remainder / 2;
@@ -106,9 +87,8 @@ export class FpsMeter {
   //   }
   // }
 
-
   ticks() {
-    let { period, bgColor, width, height, maxFps } = this.settings;
+    let { period, width, height, maxFps } = this.settings;
     let lastTime = 0;
     let count = 0;
     const mesure = () => {
@@ -129,24 +109,33 @@ export class FpsMeter {
         count = 0;
         this.columnValues[this.columnValues.length - 1] = percentageFps;
         this.context.clearRect(0, 0, width, height);
-        this.context.fillStyle = bgColor;
-        this.context.fillRect(0, 0, width, height);
+        this.renderBackground(fps);
         this.renderColumns();
-        this.renderText(fpsForShow);
+        this.renderText(fpsForShow, fps);
       }
       requestAnimationFrame(mesure);
     };
     requestAnimationFrame(mesure);
   };
 
-  private renderText(fps) {
-    const { font, height, fontSize, textFontSize, width, graphPadding } = this.settings;
-    this.context.fillStyle = this.settings.textColor;
+  private renderBackground(fps) {
+    const { height, width } = this.settings;
+    const { bgColor, colerfull } = this.settings.theme;
+    this.context.fillStyle = colerfull === 'background' ? hslColPerc(fps) : bgColor;
+    this.context.fillRect(0, 0, width, height);
+  }
+
+  private renderText(fps, realFps) {
+    const { height,  width } = this.settings;
+    const { graphPadding } = this.settings.theme;
+    const { colerfull, fontSize, textFontSize, font, textColor} = this.settings.theme;
+    this.context.fillStyle = textColor;
     const textY = height / 2 - textFontSize / 2;
     const fpsY = height / 2 - fontSize / 2;
     this.context.textAlign = 'left';
     this.context.font = `normal ${textFontSize}px ${font}`;
     this.context.fillText('FPS', graphPadding, textY);
+    this.context.fillStyle = colerfull === 'fps' ? hslColPerc(realFps) : this.settings.theme.textColor;
     this.context.textAlign = 'right';
     this.context.font = `normal ${fontSize}px ${font}`;
     this.context.shadowColor = '#000000';
@@ -156,18 +145,18 @@ export class FpsMeter {
   }
 
   private renderColumns() {
-    const { columnWidth, columnColor, columnGapSize, height, graphPadding } = this.settings;
+    const { columnWidth, columnGapSize, height  } = this.settings;
+    const { columnColor, colerfull, graphPadding } = this.settings.theme;
     this.columnValues.forEach((one, i) => {
       if (!one) {
         return;
       }
 
-      this.context.fillStyle = columnColor;
       const x = this.columnsLeftGap + columnGapSize + graphPadding + (columnWidth + columnGapSize) * i;
       const value = (height - graphPadding * 2) / 100 * one;
       const y = height - value - graphPadding;
-      const color = hslColPerc(one);
-      this.context.fillStyle = color;
+
+      this.context.fillStyle = colerfull === 'graph' ? hslColPerc(one) : columnColor;
       this.context.fillRect(x, y, this.settings.columnWidth, value);
     });
   }
