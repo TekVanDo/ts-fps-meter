@@ -1,10 +1,13 @@
 {
   "name": "frame-rate-meter",
-  "version": "0.3.6",
+  "version": "0.3.9",
   "description": "fps meter",
-  "main": "./dist/frame-rate-meter.js",
-  "module": "./dist/frame-rate-meter.esm.js",
-  "types": "./dist/frame-rate-meter.d.ts",
+  "main": "frame-rate-meter.js",
+  "module": "frame-rate-meter.esm.js",
+  "types": "frame-rate-meter.d.ts",
+  "files": [
+    "dist"
+  ],
   "author": "Alexander Strochkov <tek@inbox.ru>",
   "license": "MIT",
   "private": false,
@@ -15,7 +18,6 @@
     "build": "rollup --config rollup.config.prod.js",
     "docs": "typedoc"
   },
-  "dependencies": {},
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.1.1",
     "@typescript-eslint/eslint-plugin": "^4.14.2",

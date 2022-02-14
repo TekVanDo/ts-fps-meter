@@ -63,7 +63,7 @@ export class FpsMeter {
     this.calcColumnNumber();
     this.canvas.width = width;
     this.canvas.height = height;
-    this.canvas.style.cssText = `width:${width}px;height:${height}px;position:absolute;${position}`;
+    this.canvas.style.cssText = `width:${width}px;height:${height}px;position:absolute;${positions[position]}`;
     this.context = this.canvas.getContext('2d');
     this.context.textBaseline = 'top';
 
