@@ -17,7 +17,7 @@ const defaultConfig: FpsMeterConfig = {
   minFps: 0,
   maxFps: 60,
   period: 500,
-  position: positions.topRight,
+  position: 'topRight',
   theme: baseTheme
 };
 

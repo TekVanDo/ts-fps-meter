@@ -1,10 +1,10 @@
 {
   "name": "frame-rate-meter",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "description": "fps meter",
-  "main": "browser-lib-starter.js",
-  "module": "browser-lib-starter.esm.js",
-  "author": "Tek",
+  "main": "frame-rate-meter.js",
+  "module": "frame-rate-meter.esm.js",
+  "author": "Alexander Strochkov <tek@inbox.ru>",
   "license": "MIT",
   "private": false,
   "type": "commonjs",
@@ -14,14 +14,7 @@
     "build": "rollup --config rollup.config.prod.js",
     "docs": "typedoc"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ailon/browser-lib-starter"
-  },
-  "dependencies": {
-    "raf": "^3.4.1",
-    "to-css": "^1.2.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.1.1",
     "@typescript-eslint/eslint-plugin": "^4.14.2",
