@@ -15,30 +15,34 @@ interface FpsMeterConfig {
   textFontSize: number;
   fontSize: number;
   font: string;
+  position: string;
+  colerfull: boolean;
 }
 
+const positions = {
+  'topLeft': 'left: 0; top: 0;',
+  'topRight': 'right: 0; top: 0;',
+  'bottomRight': 'right: 0; bottom: 0;',
+  'bottomLeft': 'left: 0; bottom: 0;'
+};
+
 const defaultConfig: FpsMeterConfig = {
-  width: 110,
-  height: 40,
+  width: 250,
+  height: 100,
   graphPadding: 5,
   columnWidth: 4,
   columnGapSize: 1,
   bgColor: 'rgb(34, 34, 34)',
-  columnColor: '#FF0000',
+  columnColor: '#3f3f3f',
   textColor: '#ffffff',
   minFps: 0,
-  maxFps: 60,
+  maxFps: 240,
   period: 500,
   font: 'Consolas, "Andale Mono", monospace',
   textFontSize: 12,
-  fontSize: 24
-};
-
-const positions = {
-  'top-left': 'left: 0; top: 0;',
-  'top-right': 'right: 0; top: 0;',
-  'bottom-right': 'right: 0; bottom: 0;',
-  'bottom-left': 'left: 0; bottom: 0;'
+  fontSize: 24,
+  position: positions.topRight,
+  colerfull: false
 };
 
 export class FpsMeter {
@@ -70,11 +74,11 @@ export class FpsMeter {
   private createIndicator() {
     this.canvas = document.createElement('canvas');
     document.body.appendChild(this.canvas);
-    const { width, height, fontSize, font, bgColor } = this.settings;
+    const { width, height, position, bgColor } = this.settings;
     this.calcColumnNumber();
     this.canvas.width = width;
     this.canvas.height = height;
-    this.canvas.style.cssText = `width:${width}px;height:${height}px`;
+    this.canvas.style.cssText = `width:${width}px;height:${height}px;position:absolute;${position}`;
     this.context = this.canvas.getContext('2d');
     this.context.textBaseline = 'top';
     this.context.fillStyle = bgColor;
@@ -147,7 +151,7 @@ export class FpsMeter {
     this.context.font = `normal ${fontSize}px ${font}`;
     this.context.shadowColor = '#000000';
     this.context.shadowBlur = 1;
-    this.context.strokeText(fps,width - graphPadding, fpsY);
+    this.context.strokeText(fps, width - graphPadding, fpsY);
     this.context.fillText(fps, width - graphPadding, fpsY);
   }
 
