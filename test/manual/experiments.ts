@@ -2,17 +2,10 @@ import { FpsMeter } from '../../src/lib/FpsMeter';
 
 export class Experiments {
   public addHelloToBody() {
-    // const ld = new FpsMeter({
-    //   width: 500,
-    //   height: 200,
-    //   columnWidth: 20,
-    //   columnGapSize: 10,
-    //   period: 1000,
-    //   maxFps: 240,
-    //   graphPadding: 30
-    // });
-
-    const fp = new FpsMeter({ period: 500, colerfull: 'fps' });
+    const fp1 = new FpsMeter({ theme: 'light', position: 'topLeft' });
+    const fp2 = new FpsMeter({ theme: 'dark' });
+    const fp3 = new FpsMeter({ theme: 'colorful', position: 'bottomLeft' });
+    const fp4 = new FpsMeter({ theme: 'transparent', position: 'bottomRight' });
   }
 }
 

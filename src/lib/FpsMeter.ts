@@ -28,6 +28,7 @@ export class FpsMeter {
   private columnsLeftGap: number;
   private canvas;
   private context;
+  private started = false;
 
   constructor(config: Partial<FpsMeterOptions>) {
     this.setConfig(config);
@@ -36,10 +37,12 @@ export class FpsMeter {
 
   setConfig(config: Partial<FpsMeterOptions>) {
     let theme = baseTheme;
-    if (typeof currentConfig.theme === 'string') {
-
+    if (typeof config.theme === 'string') {
+      theme = { ...theme, ...themes[config.theme] };
+    } else {
+      theme = { ...theme, ...config.theme };
     }
-    const currentConfig = { ...defaultConfig, ...config };
+    const currentConfig = { ...defaultConfig, ...config, theme };
     const ratio = Math.round(window.devicePixelRatio || 1);
     let { width, height, columnWidth, columnGapSize, } = currentConfig;
 
@@ -64,7 +67,7 @@ export class FpsMeter {
     this.context = this.canvas.getContext('2d');
     this.context.textBaseline = 'top';
 
-    this.ticks();
+    this.start();
   }
 
   private calcColumnNumber() {
@@ -87,11 +90,19 @@ export class FpsMeter {
   //   }
   // }
 
-  ticks() {
+  stop() {
+    this.started = false;
+  }
+
+  start() {
+    this.started = true;
     let { period, width, height, maxFps } = this.settings;
     let lastTime = 0;
     let count = 0;
     const mesure = () => {
+      if (!this.started) {
+        return;
+      }
       count++;
       let currentTime = +new Date();
       if (currentTime - lastTime > period) {
@@ -126,9 +137,9 @@ export class FpsMeter {
   }
 
   private renderText(fps, realFps) {
-    const { height,  width } = this.settings;
+    const { height, width } = this.settings;
     const { graphPadding } = this.settings.theme;
-    const { colerfull, fontSize, textFontSize, font, textColor} = this.settings.theme;
+    const { colerfull, fontSize, textFontSize, font, textColor } = this.settings.theme;
     this.context.fillStyle = textColor;
     const textY = height / 2 - textFontSize / 2;
     const fpsY = height / 2 - fontSize / 2;
@@ -145,7 +156,7 @@ export class FpsMeter {
   }
 
   private renderColumns() {
-    const { columnWidth, columnGapSize, height  } = this.settings;
+    const { columnWidth, columnGapSize, height } = this.settings;
     const { columnColor, colerfull, graphPadding } = this.settings.theme;
     this.columnValues.forEach((one, i) => {
       if (!one) {

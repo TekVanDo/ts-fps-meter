@@ -1,10 +1,10 @@
 {
-  "name": "browser-lib-starter",
+  "name": "frame-rate-meter",
   "version": "1.0.0",
-  "description": "browser library developer starter kit",
+  "description": "fps meter",
   "main": "browser-lib-starter.js",
   "module": "browser-lib-starter.esm.js",
-  "author": "Author Name",
+  "author": "Tek",
   "license": "MIT",
   "private": false,
   "type": "commonjs",

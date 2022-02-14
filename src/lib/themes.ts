@@ -26,7 +26,7 @@ export const themes: { [key: string]: Partial<FpsMeterTheme> } = {
   },
   colorful: {
     columnColor: '#777',
-    textColor: '#888',
+    textColor: '#fff',
     colerfull: 'background',
   },
   transparent: {
