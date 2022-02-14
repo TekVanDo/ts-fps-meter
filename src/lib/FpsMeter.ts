@@ -89,6 +89,10 @@ export class FpsMeter {
   //     return +new Date();
   //   }
   // }
+  destroy() {
+    this.stop();
+    this.canvas.remove();
+  }
 
   stop() {
     this.started = false;
