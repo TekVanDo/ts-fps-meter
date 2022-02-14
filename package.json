@@ -1,9 +1,10 @@
 {
   "name": "frame-rate-meter",
-  "version": "0.3.1",
+  "version": "0.3.6",
   "description": "fps meter",
-  "main": "frame-rate-meter.js",
-  "module": "frame-rate-meter.esm.js",
+  "main": "./dist/frame-rate-meter.js",
+  "module": "./dist/frame-rate-meter.esm.js",
+  "types": "./dist/frame-rate-meter.d.ts",
   "author": "Alexander Strochkov <tek@inbox.ru>",
   "license": "MIT",
   "private": false,
