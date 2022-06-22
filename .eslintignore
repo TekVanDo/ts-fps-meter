@@ -1,2 +1,3 @@
-dist/*
-build-dev/*
+node_modules
+/lib
+/coverage
